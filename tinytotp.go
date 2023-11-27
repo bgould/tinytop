@@ -23,7 +23,6 @@ import (
 	"crypto/sha1"
 	"encoding/base32"
 	"encoding/binary"
-	"fmt"
 	"hash"
 	"math"
 	"strconv"
@@ -33,14 +32,14 @@ import (
 
 const debug = false
 
-type errorString string
-
 var DefaultOpts = ValidateOpts{
 	Period:    30,
 	Skew:      1,
 	Digits:    DigitsSix,
 	Algorithm: AlgorithmSHA1,
 }
+
+type errorString string
 
 func (s errorString) Error() string {
 	return string(s)
@@ -67,6 +66,7 @@ func GenerateCode(secret string, t time.Time) (string, error) {
 	return GenerateCodeCustom(secret, t, DefaultOpts)
 }
 
+// TimeBasedCounter returns the TOTP counter value for the given time/period.
 func TimeBasedCounter(t time.Time, period uint) uint64 {
 	return uint64(math.Floor(float64(t.Unix()) / float64(period)))
 }
@@ -112,10 +112,10 @@ func generateCodeHTOP(secret string, counter uint64, opts ValidateOpts) (passcod
 	buf := make([]byte, 8)
 	mac := hmac.New(opts.Algorithm.Hash, secretBytes)
 	binary.BigEndian.PutUint64(buf, counter)
-	if debug {
-		fmt.Printf("counter=%v\n", counter)
-		fmt.Printf("buf=%v\n", buf)
-	}
+	// if debug {
+	// 	fmt.Printf("counter=%v\n", counter)
+	// 	fmt.Printf("buf=%v\n", buf)
+	// }
 
 	mac.Write(buf)
 	sum := mac.Sum(nil)
@@ -131,11 +131,11 @@ func generateCodeHTOP(secret string, counter uint64, opts ValidateOpts) (passcod
 	l := opts.Digits.Length()
 	mod := int32(value % int64(math.Pow10(l)))
 
-	if debug {
-		fmt.Printf("offset=%v\n", offset)
-		fmt.Printf("value=%v\n", value)
-		fmt.Printf("mod'ed=%v\n", mod)
-	}
+	// if debug {
+	// 	fmt.Printf("offset=%v\n", offset)
+	// 	fmt.Printf("value=%v\n", value)
+	// 	fmt.Printf("mod'ed=%v\n", mod)
+	// }
 
 	return opts.Digits.Format(mod), nil
 }
@@ -163,7 +163,7 @@ func (d Digits) Length() int {
 }
 
 func (d Digits) String() string {
-	return fmt.Sprintf("%d", d)
+	return strconv.FormatInt(int64(d), 10) //fmt.Sprintf("%d", d)
 }
 
 // Algorithm represents the hashing function to use in the HMAC
